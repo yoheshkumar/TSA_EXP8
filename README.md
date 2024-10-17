@@ -21,32 +21,29 @@ the dataset
 11. Also perform exponential smoothing and plot the graph
 ## PROGRAM:
 ```python
-# Import necessary libraries
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import warnings
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
-# Suppress warnings
 warnings.filterwarnings('ignore')
 
-# Read the dataset from the uploaded CSV file
-file_path = 'raw_sales.csv'  # Path to the uploaded dataset
+file_path = 'Microsoft_Stock.csv'
 data = pd.read_csv(file_path)
 
-# Display the shape and the first few rows of the dataset
 print("Shape of the dataset:", data.shape)
 print("First 20 rows of the dataset:")
 print(data.head(20))
 
-# Ensure the 'datesold' column is in datetime format and set it as index
-data['datesold'] = pd.to_datetime(data['datesold'])
-data.set_index('datesold', inplace=True)
+data['Date'] = pd.to_datetime(data['Date'])
+data.set_index('Date', inplace=True)
 
-# Plot Original Price Data
+data['Close'] = pd.to_numeric(data['Close'], errors='coerce')
+data = data.dropna()
+
 plt.figure(figsize=(12, 6))
-plt.plot(data['price'], label='Original Price', color='blue')
+plt.plot(data['Close'], label='Original Price', color='blue')
 plt.title('Original Price Data')
 plt.xlabel('Date')
 plt.ylabel('Price')
@@ -54,13 +51,10 @@ plt.legend()
 plt.grid()
 plt.show()
 
-# Moving Average
-# Perform rolling average transformation with a window size of 3 (adjust as needed)
-rolling_mean_3 = data['price'].rolling(window=3).mean()
+rolling_mean_3 = data['Close'].rolling(window=3).mean()
 
-# Plot Moving Average
 plt.figure(figsize=(12, 6))
-plt.plot(data['price'], label='Original Price', color='blue')
+plt.plot(data['Close'], label='Original Price', color='blue')
 plt.plot(rolling_mean_3, label='Moving Average (window=3)', color='orange')
 plt.title('Moving Average of Price')
 plt.xlabel('Date')
@@ -69,20 +63,16 @@ plt.legend()
 plt.grid()
 plt.show()
 
-# Exponential Smoothing
-model = ExponentialSmoothing(data['price'], trend='add', seasonal=None)
+model = ExponentialSmoothing(data['Close'], trend='add', seasonal=None)
 model_fit = model.fit()
 
-# Make predictions for the next 5 periods (adjust as needed)
 future_steps = 5
 predictions = model_fit.predict(start=len(data), end=len(data) + future_steps - 1)
 
-# Create a future index for the predicted dates
 future_dates = pd.date_range(start=data.index[-1] + pd.Timedelta(days=1), periods=future_steps)
 
-# Plot the original data and Exponential Smoothing predictions
 plt.figure(figsize=(12, 6))
-plt.plot(data['price'], label='Original Price', color='blue')
+plt.plot(data['Close'], label='Original Price', color='blue')
 plt.plot(future_dates, predictions, label='Exponential Smoothing Forecast', color='orange')
 plt.title('Exponential Smoothing Predictions for Price')
 plt.xlabel('Date')
@@ -92,6 +82,7 @@ plt.xticks(rotation=45)
 plt.grid(True)
 plt.tight_layout()
 plt.show()
+
 ```
 
 ## OUTPUT:
